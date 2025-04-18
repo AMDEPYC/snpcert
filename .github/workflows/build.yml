@@ -17,6 +17,7 @@ jobs:
       matrix:
         image:
           - guest-fedora-41
+          - guest-ubuntu-oracular
 
     steps:
       - uses: actions/checkout@v4
