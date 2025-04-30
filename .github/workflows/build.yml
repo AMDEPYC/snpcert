@@ -35,4 +35,4 @@ jobs:
           path: |
             ${{ matrix.image }}/image.efi
             ${{ matrix.image }}/image.qcow2
-          retention-days: 7
+          retention-days: 15
