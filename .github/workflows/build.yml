@@ -13,11 +13,11 @@ jobs:
     strategy:
       matrix:
         image:
-          - path: net/guest/fedora/41
+          - path: images/guest-fedora-41
             name: guest-fedora-41
-          - path: net/guest/ubuntu/oracular
+          - path: images/guest-ubuntu-oracular
             name: guest-ubuntu-oracular
-          - path: net/guest/debian/bookworm
+          - path: images/guest-debian-bookworm
             name: guest-debian-bookworm
 
     steps:
