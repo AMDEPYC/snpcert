@@ -1,0 +1,12 @@
+#!/bin/bash
+set -eux
+
+# Create destination dir inside the image root
+mkdir -p "${DESTDIR}/usr/local/bin"
+
+# Download prebuilt binary
+curl -L -o "${DESTDIR}/usr/local/bin/snpguest" \
+  https://github.com/virtee/snpguest/releases/download/v0.9.1/snpguest
+
+# Make it executable
+chmod +x "${DESTDIR}/usr/local/bin/snpguest"
