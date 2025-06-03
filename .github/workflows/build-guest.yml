@@ -1,4 +1,4 @@
-name: build
+name: build-guest
 on:
   workflow_dispatch:
   pull_request:

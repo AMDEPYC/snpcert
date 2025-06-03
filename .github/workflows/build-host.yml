@@ -1,0 +1,44 @@
+name: build-host
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    name: ${{ matrix.image.name }}
+    runs-on: ubuntu-24.04
+
+    strategy:
+      matrix:
+        image:
+          - path: images/host-fedora-41
+            name: host-fedora-41
+          - path: images/host-ubuntu-oracular
+            name: guest-ubuntu-oracular
+          - path: images/host-debian-bookworm
+            name: host-debian-bookworm
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo sed -i 's/noble/plucky/g' /etc/apt/sources.list.d/ubuntu.sources
+          sudo apt update
+          sudo apt install -y mkosi
+
+      - name: Build ${{ matrix.image.name }}
+        run: |
+          sudo mkosi --image-id=${{ matrix.image.name }} -C ${{ matrix.image.path }}/ cat-config
+          sudo mkosi --image-id=${{ matrix.image.name }} -C ${{ matrix.image.path }}/ summary
+          sudo mkosi --image-id=${{ matrix.image.name }} -C ${{ matrix.image.path }}/ build
+
+      - name: Upload image
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.image.name }}
+          path: |
+            ${{ matrix.image.path }}/${{ matrix.image.name }}.efi
+          retention-days: 7
