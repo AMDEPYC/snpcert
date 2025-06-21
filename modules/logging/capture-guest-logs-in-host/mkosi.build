@@ -1,0 +1,5 @@
+#!/bin/bash
+set -eux
+
+# Create guest log directory inside the image root
+mkdir -p "${DESTDIR}/var/log/journal/guest-logs/"
