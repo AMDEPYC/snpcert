@@ -1,0 +1,7 @@
+#!/bin/bash
+set -eux
+
+# Create guest log directory inside the image root
+mkdir -p "${DESTDIR}/var/log/journal/guest-logs/"
+chown systemd-journal-remote:systemd-journal-remote "${DESTDIR}/var/log/journal/guest-logs/"
+chmod 755 "${DESTDIR}/var/log/journal/guest-logs/"
