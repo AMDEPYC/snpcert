@@ -3,27 +3,59 @@
 # Environment Variables
 ATTESTATION_DIR="/usr/attestation_service"
 
+# Utility function to check the error status of each step in the attestation workflow
+check_command_status() {
+  local command_status=$1
+  local command_name=$2
+  local command_output=$3
+  if [[ $command_status -ne 0 ]]; then
+    >&2 echo -e "ERROR: ${command_name} fails !! \n${command_output}"
+    return 1
+  fi
+}
+
 snpguest_regular_attestation_workflow() {
+  # Step 1: Verify SNP bit status on the guest
+  local guest_snp_bit_result=$(snpguest ok 2>&1)
+  local guest_snp_status=$?
 
-  # Run SNP tests
-  snpguest ok
+  check_command_status "${guest_snp_status}" "SNP verification on the guest" "${guest_snp_bit_result}" || return 1
 
-  # Cleanup and create a fresh attestation directory
+  # Step 2: Create a fresh attestation working directory
   [  -d "${ATTESTATION_DIR}" ] &&  rm -rf "${ATTESTATION_DIR}"
   mkdir -p "${ATTESTATION_DIR}"
 
-  # Request SNP Attestation Report(Version: 3) with random data
-  snpguest report ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/random-request-data.txt --random
+  # Step 3: Generate the SNP Attestation Report using a randomly generated request data
+  local snp_guest_report=$(snpguest report ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/random-request-data.txt --random 2>&1)
+  local report_status=$?
 
-  # Fetch ARK, ASK, VCEK certificates (saved in ./certificates)
-  snpguest fetch ca pem -r ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/certificates
-  snpguest fetch vcek pem ${ATTESTATION_DIR}/certificates/ ${ATTESTATION_DIR}/attestation-report.bin
+  check_command_status "${report_status}" "snpguest report generation" "${snp_guest_report}" || return 1
 
-  # Verify if ARK, ASK and VCEK are all signed properly
-  snpguest verify certs ${ATTESTATION_DIR}/certificates/
-  snpguest verify attestation ${ATTESTATION_DIR}/certificates/ ${ATTESTATION_DIR}/attestation-report.bin
+  # Fetch the ARK, ASK certificate chain from Key Distribution Server
+  local fetch_ca=$(snpguest fetch ca pem -r ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/certificates 2>&1)
+  local fetch_ca_status=$?
 
-  # Display the SNP Attestation Report(Version: 3) with random data
+  check_command_status "${fetch_ca_status}" "fetch of CA certificate chain" "${fetch_ca}" || return 1
+
+  # Fetch the VCEK certificate chain from Key Distribution Server
+  local fetch_vcek=$(snpguest fetch vcek pem ${ATTESTATION_DIR}/certificates/ ${ATTESTATION_DIR}/attestation-report.bin 2>&1)
+  local fetch_vcek_status=$?
+
+  check_command_status "${fetch_vcek_status}" "fetch of VCEK certificate chain" "${fetch_vcek}" || return 1
+
+  # Verify if the ARK, ASK and VCEK certificate chain are signed properly
+  local verify_cert_chain=$(snpguest verify certs ${ATTESTATION_DIR}/certificates/ 2>&1)
+  local verify_cert_chain_status=$?
+
+  check_command_status "${verify_cert_chain_status}" "Verification of ARK, ASK and VCEK cert-chain" "${verify_cert_chain}" || return 1
+
+  # Verify the SNP Attestation Report
+  local verify_attestation=$(snpguest verify attestation ${ATTESTATION_DIR}/certificates/ ${ATTESTATION_DIR}/attestation-report.bin 2>&1)
+  local verify_attestation_status=$?
+
+  check_command_status "${verify_attestation_status}" "Verification of SNP Attestation Report" "${verify_attestation}" || return 1
+
+  # Show the SNP Attestation Report for the randomly generated request data
   snpguest display report ${ATTESTATION_DIR}/attestation-report.bin
 }
 
