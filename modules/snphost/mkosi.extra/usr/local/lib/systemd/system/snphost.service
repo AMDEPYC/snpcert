@@ -6,7 +6,7 @@ Wants=network-online.target
 
 [Service]
 Type=simple
-ExecStart=/bin/sh -c "modprobe msr && snphost ok"
+ExecStart=snphost ok
 StandardOutput=journal+console
 StandardError=journal+console
 ExecStartPost=/usr/bin/touch /run/snphost.ok
