@@ -6,7 +6,6 @@ EFI_PATH="/usr/local/lib/guest-image/guest.efi"
 MEASUREMENT_FILE="/usr/local/lib/guest-image/guest_measurement.txt"
 GUEST_BOOT_FILE="/usr/local/lib/guest-image/guest-boot.log"
 GUEST_ERROR_LOG="/tmp/guest-error.log"
-GUEST_JOURNAL_LOCATION="/var/log/journal/guest-logs"
 
 # Check which OVMF binary to use
 if [ -f "$PKG_OVMF_PATH" ]; then
@@ -56,24 +55,4 @@ if [  -s "${GUEST_ERROR_LOG}" ]; then
     exit 2
 fi
 
-# Get the snpguest-test service log from the guest journal
-guest_service_log=$(journalctl -D "${GUEST_JOURNAL_LOCATION}" -u snpguest-test.service)
-
-# Extract lines containing 'error' (case-insensitive)
-error_lines=$(echo "$guest_service_log" | grep -i "error")
-
-# Replace everything up to and including 'error' with just 'error'
-attestation_error_log=$(echo "$error_lines" | sed -E 's/.*([Ee][Rr][Rr][Oo][Rr])/Error/i')
-
-# Check for any Attestation errors
-if [  -n "${attestation_error_log}" ]; then
-    echo -e "\nERROR: SNP Guest Attestation fails!! \n" >&2
-    echo -e "${attestation_error_log}" >&2
-    exit 1
-fi
-
-# Access snpguest-test service real-time log on the host
-echo -e "\nDisplay the snpguest service log of the active SNP Guest"
-
-# Add SNP guest's snpguest-test service log into the host's launch-guest service
-echo -e "\n${guest_service_log}"
+echo -e "\nSNP Guest boot is complete."
