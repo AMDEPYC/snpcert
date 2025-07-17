@@ -1,0 +1,15 @@
+[Unit]
+Description=Show SNP Guest Attestation Status on the Host
+DefaultDependencies=no
+After=network-online.target  systemd-journal-remote.service launch-guest.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/scripts/show-snp-guest-attestation.sh
+StandardOutput=journal+console
+StandardError=journal+console
+ExecStartPost=/usr/bin/touch /run/show-snp-guest-attestation-log.ok
+
+[Install]
+WantedBy=multi-user.target
