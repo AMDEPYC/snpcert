@@ -1,29 +1,29 @@
 #!/bin/bash
 
 # Environment Variables
-ATTESTATION_DIR="/usr/attestation_service"
+ATTESTATION_DIR="/usr/local/lib/attestation_service"
 
 # Utility function to check the error status of each step in the attestation workflow
 check_command_status() {
   local command_status=$1
   local command_name=$2
   local command_output=$3
+
+  # Print command status
   if [[ $command_status -ne 0 ]]; then
     >&2 echo -e "ERROR: ${command_name} fails !! \n${command_output}"
     return 1
+  else
+    echo -e "${command_output}\n"
   fi
 }
 
 snpguest_regular_attestation_workflow() {
-  # Step 1: Verify SNP bit status on the guest
-  { guest_snp_bit_result=$(snpguest ok 2>&1); guest_snp_status=$?; }
-  check_command_status "${guest_snp_status}" "SNP verification on the guest" "${guest_snp_bit_result}" || return 1
-
-  # Step 2: Create a fresh attestation working directory
+  # Create a fresh attestation working directory
   [  -d "${ATTESTATION_DIR}" ] &&  rm -rf "${ATTESTATION_DIR}"
   mkdir -p "${ATTESTATION_DIR}"
 
-  # Step 3: Generate the SNP Attestation Report using a randomly generated request data
+  # Generate the SNP Attestation Report using a randomly generated request data
   { snp_guest_report=$(snpguest report ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/random-request-data.txt --random 2>&1); report_status=$?; }
   check_command_status "${report_status}" "snpguest report generation" "${snp_guest_report}" || return 1
 

@@ -1,0 +1,14 @@
+[Unit]
+Description=Run snguest ok to verify SNP enablement on guest
+DefaultDependencies=no
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+ExecStart=snpguest ok
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
