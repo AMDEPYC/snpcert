@@ -10,6 +10,7 @@ ExecStart=snphost ok
 StandardOutput=journal+console
 StandardError=journal+console
 ExecStartPost=/usr/bin/touch /run/snphost.ok
+LogExtraFields="TEST=TRUE" "TEST_NAME=SNP tests on the host"
 
 [Install]
 WantedBy=multi-user.target
