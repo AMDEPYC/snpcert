@@ -10,7 +10,7 @@ ExecStart=/usr/local/lib/scripts/launch-guest.sh
 StandardOutput=journal+console
 StandardError=journal+console
 ExecStartPost=/usr/bin/touch /run/launch-guest.ok
-LogExtraFields="TEST=TRUE" "TEST_NAME=SNP Guest launch"
+LogExtraFields="TEST=TRUE" "TEST_NAME=SNP Guest launch" "SNP_HOST_TEST_LOG=TRUE"
 
 [Install]
 WantedBy=multi-user.target
