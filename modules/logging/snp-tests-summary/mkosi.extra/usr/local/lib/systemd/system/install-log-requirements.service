@@ -1,0 +1,15 @@
+[Unit]
+Description=Install log parser requirements
+DefaultDependencies=no
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/scripts/install_requirements.sh
+StandardOutput=journal+console
+StandardError=journal+console
+ExecStartPost=/usr/bin/touch /run/install-parser-log-requirements.ok
+
+[Install]
+WantedBy=multi-user.target

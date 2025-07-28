@@ -11,6 +11,7 @@ ExecStart=/usr/local/lib/scripts/guest_measurement.sh
 StandardOutput=journal+console
 StandardError=journal+console
 ExecStartPost=/usr/bin/touch /run/calculate-measurement.ok
+LogExtraFields="SNP_HOST_TEST_LOG=TRUE"
 
 [Install]
 WantedBy=multi-user.target

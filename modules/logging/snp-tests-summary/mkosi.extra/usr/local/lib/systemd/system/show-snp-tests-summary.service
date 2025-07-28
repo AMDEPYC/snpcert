@@ -1,0 +1,15 @@
+[Unit]
+Description=Show SNP test results
+DefaultDependencies=no
+After=network-online.target snphost.service launch-guest.service  show-snp-guest-test.service  show-snp-guest-attestation.service  install-log-requirements.service
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3  /usr/local/lib/scripts/snp-tests-log-parser.py
+StandardOutput=journal+console
+StandardError=journal+console
+ExecStartPost=/usr/bin/touch /run/show-snp-test-results.ok
+
+[Install]
+WantedBy=multi-user.target

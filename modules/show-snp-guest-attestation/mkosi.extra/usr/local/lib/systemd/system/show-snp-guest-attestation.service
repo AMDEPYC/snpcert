@@ -10,6 +10,7 @@ ExecStart=/usr/local/lib/scripts/show-snp-guest-attestation.sh
 StandardOutput=journal+console
 StandardError=journal+console
 ExecStartPost=/usr/bin/touch /run/show-snp-guest-attestation-log.ok
+LogExtraFields="TEST=TRUE" "TEST_NAME=SNP Guest Attestation"
 
 [Install]
 WantedBy=multi-user.target
