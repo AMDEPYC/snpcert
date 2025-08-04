@@ -9,6 +9,7 @@ Type=simple
 ExecStart=snpguest ok
 StandardOutput=journal+console
 StandardError=journal+console
+LogExtraFields="SNP_GUEST_TEST_LOG=TRUE"
 
 [Install]
 WantedBy=multi-user.target

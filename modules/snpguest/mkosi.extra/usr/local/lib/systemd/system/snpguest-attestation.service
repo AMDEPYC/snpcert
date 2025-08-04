@@ -1,14 +1,15 @@
 [Unit]
-Description=Run SNP Regular Attestation after boot
+Description=Run SNP Guest regular attestation workflow
 DefaultDependencies=no
 After=network-online.target snpguest-ok.service
 Wants=network-online.target snpguest-ok.service
 
 [Service]
-Type=simple
+Type=oneshot
 ExecStart=/usr/local/lib/scripts/snpguest_attestation.sh
 StandardOutput=journal+console
 StandardError=journal+console
+LogExtraFields="SNP_GUEST_TEST_LOG=TRUE"
 
 [Install]
 WantedBy=multi-user.target
