@@ -1,0 +1,14 @@
+[Unit]
+Description=Fetch SNP Guest Attestation Status inside the guest
+DefaultDependencies=no
+After=network-online.target snpguest-attestation.service
+Wants=network-online.target snpguest-attestation.service
+
+[Service]
+Type=oneshot
+ExecStart=jq '.' /usr/local/lib/attestation_status
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target

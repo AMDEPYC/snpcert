@@ -2,12 +2,19 @@
 
 # Environment Variables
 ATTESTATION_DIR="/usr/local/lib/attestation_service"
+ATTESTATION_STATUS_LOG="/usr/local/lib/attestation_status"
 
 # Utility function to check the error status of each step in the attestation workflow
 check_command_status() {
   local command_status=$1
   local command_name=$2
   local command_output=$3
+
+  # Store the snpguest command status in a json file
+  jq --null-input \
+     --arg command_status_value "${command_status}" \
+     --arg command_name_key "${command_name}" \
+    '{ ($command_name_key): $command_status_value }' >> ${ATTESTATION_STATUS_LOG}
 
   # Print command status
   if [[ $command_status -ne 0 ]]; then
