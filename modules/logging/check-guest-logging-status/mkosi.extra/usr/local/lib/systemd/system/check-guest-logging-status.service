@@ -1,0 +1,17 @@
+[Unit]
+Description=Checks for guest logging
+DefaultDependencies=no
+After=network-online.target systemd-journal-remote.service launch-guest.service
+Wants=network-online.target
+ConditionPathExists=/run/launch-guest.ok
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/scripts/check-guest-logging-status.sh
+StandardOutput=journal+console
+StandardError=journal+console
+ExecStartPost=/usr/bin/touch /run/checks-for-guest-logging.ok
+LogExtraFields="SNP_GUEST_TEST_LOG=TRUE"
+
+[Install]
+WantedBy=multi-user.target
