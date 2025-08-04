@@ -2,12 +2,19 @@
 
 # Environment Variables
 ATTESTATION_DIR="/usr/local/lib/attestation_service"
+ATTESTATION_STATUS_LOG="/usr/local/lib/attestation_status"
 
 # Utility function to check the error status of each step in the attestation workflow
 check_command_status() {
   local command_status=$1
   local command_name=$2
   local command_output=$3
+
+  # Store the snpguest command status in a json file
+  jq --null-input \
+     --arg command_status_value "${command_status}" \
+     --arg command_name_key "${command_name}" \
+    '{ ($command_name_key): $command_status_value }' >> ${ATTESTATION_STATUS_LOG}
 
   # Print command status
   if [[ $command_status -ne 0 ]]; then
@@ -25,15 +32,15 @@ snpguest_regular_attestation_workflow() {
 
   # Generate the SNP Attestation Report using a randomly generated request data
   { snp_guest_report=$(snpguest report ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/random-request-data.txt --random 2>&1); report_status=$?; }
-  check_command_status "${report_status}" "snpguest report generation" "${snp_guest_report}" || return 1
+  check_command_status "${report_status}" "Generation of SNP Guest Report" "${snp_guest_report}" || return 1
 
   # Fetch the ARK, ASK certificate chain from Key Distribution Server
   { fetch_ca=$(snpguest fetch ca pem -r "${ATTESTATION_DIR}/attestation-report.bin" "${ATTESTATION_DIR}/certificates" 2>&1); fetch_ca_status=$?; }
-  check_command_status "${fetch_ca_status}" "fetch of CA certificate chain" "${fetch_ca}" || return 1
+  check_command_status "${fetch_ca_status}" "Fetch of CA certificate chain" "${fetch_ca}" || return 1
 
   # Fetch the VCEK certificate chain from Key Distribution Server
   { fetch_vcek=$(snpguest fetch vcek pem ${ATTESTATION_DIR}/certificates/ ${ATTESTATION_DIR}/attestation-report.bin 2>&1); fetch_vcek_status=$?; }
-  check_command_status "${fetch_vcek_status}" "fetch of VCEK certificate chain" "${fetch_vcek}" || return 1
+  check_command_status "${fetch_vcek_status}" "Fetch of VCEK certificate chain" "${fetch_vcek}" || return 1
 
   # Verify if the ARK, ASK and VCEK certificate chain are signed properly
   { verify_cert_chain=$(snpguest verify certs ${ATTESTATION_DIR}/certificates/ 2>&1); verify_cert_chain_status=$?; }
