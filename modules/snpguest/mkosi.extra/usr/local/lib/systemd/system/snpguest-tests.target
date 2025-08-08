@@ -1,0 +1,7 @@
+[Unit]
+Description=Run all the snpguest tests
+Wants=snpguest-ok.service snpguest-attestation.service
+After=snpguest-ok.service snpguest-attestation.service
+
+[Install]
+WantedBy=multi-user.target
