@@ -1,0 +1,2 @@
+enable boot-succesful.service
+enable tests-finished.service

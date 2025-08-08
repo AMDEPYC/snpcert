@@ -1,0 +1,15 @@
+[Unit]
+Description=Show the guest logs for the appropriate services in the host
+DefaultDependencies=no
+After=systemd-journal-remote.service verify-guest.service
+Wants=systemd-journal-remote.service verify-guest.service
+Requires=verify-guest.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/lib/scripts/display-guest-logs.sh
+StandardOutput=journal+console
+StandardError=journal+console
+
+[Install]
+WantedBy=multi-user.target
