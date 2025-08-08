@@ -1,8 +1,9 @@
 [Unit]
 Description=Show SNP guest test status on the Host
 DefaultDependencies=no
-After=network-online.target systemd-journal-remote.service launch-guest.service
-Wants=network-online.target
+After=network-online.target read-guest-journal.service
+Wants=network-online.target read-guest-journal.service
+ConditionPathExists=/run/read-guest-journal.ok
 
 [Service]
 Type=oneshot

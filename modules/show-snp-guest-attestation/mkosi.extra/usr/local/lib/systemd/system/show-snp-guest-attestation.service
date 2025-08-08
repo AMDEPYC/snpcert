@@ -1,8 +1,9 @@
 [Unit]
 Description=Show SNP Guest Attestation Status on the Host
 DefaultDependencies=no
-After=network-online.target  systemd-journal-remote.service launch-guest.service
+After=network-online.target show-snp-guest-test.service
 Wants=network-online.target
+ConditionPathExists=/run/show-snp-guest-test-log.ok
 
 [Service]
 Type=oneshot

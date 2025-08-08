@@ -3,6 +3,8 @@ Description=Launch a SNP enabled guest using qemu, the embeded guest image and t
 DefaultDependencies=no
 After=network-online.target calculate-measurement.service
 Wants=network-online.target
+ConditionPathExists=/run/snphost-ok.ok
+ConditionPathExists=/run/calculate-measurement.ok
 
 [Service]
 Type=oneshot
