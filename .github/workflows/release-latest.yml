@@ -1,0 +1,51 @@
+name: release-latest
+on:
+  workflow_run:
+    workflows: ["build-host"]
+    types:
+      - completed
+
+jobs:
+  release:
+    name: Create Latest Release
+    runs-on: ubuntu-24.04
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all host artifacts
+        uses: actions/download-artifact@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          run-id: ${{ github.event.workflow_run.id }}
+          pattern: host-*
+          path: ./artifacts
+
+      - name: Prepare release assets
+        run: |
+          mkdir -p release-assets
+          
+          # Move all host .efi files to release assets directory
+          find ./artifacts -name "host*.efi" -type f -exec cp {} release-assets/ \;
+          
+          # List final release assets
+          echo "Final release assets:"
+          ls -la release-assets/
+
+      - name: Delete existing latest release
+        run: |
+          gh release delete latest --yes || echo "No existing latest release found"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create latest release
+        run: |
+          gh release create latest \
+            --title "Latest Test Images" \
+            --notes "Latest SNP Certification Test Images" \
+            --latest \
+            --prerelease \
+            release-assets/*.efi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
