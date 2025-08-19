@@ -1,0 +1,83 @@
+name: ghdp CI
+
+on:
+  push:
+    paths:
+      - 'ghdp/**'
+      - '.github/workflows/ghdp-ci.yml'
+  pull_request:
+    paths:
+      - 'ghdp/**'
+      - '.github/workflows/ghdp-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build, Lint, Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ghdp
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust (stable)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            ghdp -> ghdp/target
+
+      - name: Verify formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy lint
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build
+        run: cargo build --locked --all-targets
+
+      - name: Build (release)
+        run: cargo build --locked --release
+
+      - name: Test
+        run: cargo test --locked --all-targets -- --nocapture
+
+      - name: Package (dry run)
+        run: cargo publish --locked --dry-run
+
+  msrv:
+    name: MSRV Build & Test (1.82)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ghdp
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust (1.82)
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.82.0
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            ghdp -> ghdp/target
+
+      - name: Build (MSRV)
+        run: cargo build --locked --all-targets
+
+      - name: Test (MSRV)
+        run: cargo test --locked --all-targets -- --nocapture

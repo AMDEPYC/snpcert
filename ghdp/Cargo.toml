@@ -1,0 +1,36 @@
+[package]
+name = "ghdp"
+version = "0.1.0"
+edition = "2021"
+readme = "README.md"
+license = "MIT"
+rust-version = "1.82"
+description = "GitHub Download Proxy: stable, redirect-free URLs for GitHub release assets."
+repository = "https://github.com/AMDEPYC/snpcert"
+homepage = "https://github.com/AMDEPYC/snpcert/tree/main/ghdp"
+documentation = "https://github.com/AMDEPYC/snpcert/tree/main/ghdp"
+keywords = ["github", "proxy", "download", "release", "axum"]
+categories = ["command-line-utilities", "network-programming", "web-programming::http-server"]
+include = [
+	"src/**",
+	"Cargo.toml",
+	"README.md",
+	"LICENSE",
+]
+
+[dependencies]
+tracing-subscriber = { version = "0.3", default-features = false, features = ["env-filter", "fmt", "std"] }
+reqwest = { version = "0.12", default-features = false, features = ["stream", "rustls-tls-native-roots"] }
+clap = { version = "4.5", default-features = false, features = ["derive", "std", "help", "usage"] }
+axum = { version = "0.8", default-features = false, features = ["http1", "tokio"] }
+tokio = { version = "1", default-features = false, features = ["macros", "rt-multi-thread", "net"] }
+tracing = { version = "0.1", default-features = false }
+url = { version = "2.5", default-features = false }
+
+[profile.release]
+codegen-units = 1
+incremental = false
+opt-level = 3
+strip = true
+debug = 0
+lto = true
