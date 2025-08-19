@@ -1,0 +1,34 @@
+[workspace]
+resolver = "2"
+members = ["devpath"]
+
+[package]
+name = "beacon"
+version = "0.1.0"
+edition = "2021"
+authors = ["Advanced Micro Devices, Inc."]
+license = "MIT"
+readme = "README.md"
+repository = "https://github.com/AMDEPYC/snpcert"
+description = "Workload communication client for dispatch orchestration"
+keywords = ["communication", "orchestration", "client", "workload"]
+categories = ["network-programming", "api-bindings"]
+rust-version = "1.87"
+
+[dependencies]
+devpath = { path = "devpath" }
+clap = { version = "4.5", default-features = false, features = ["derive", "env", "std", "help", "usage"] }
+futures = "0.3"
+reqwest = { version = "0.12", default-features = false, features = ["json", "rustls-tls"] }
+tokio = { version = "1.47", features = ["rt-multi-thread", "macros", "time"] }
+serde = { version = "1.0", default-features = false, features = ["derive"] }
+zbus = { version = "5.10", default-features = false, features = ["tokio"] }
+tokio-stream = "0.1"
+
+[profile.release]
+codegen-units = 1
+incremental = false
+opt-level = 3
+strip = true
+debug = 0
+lto = true

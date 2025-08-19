@@ -1,0 +1,108 @@
+name: beacon CI
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'beacon/**'
+      - '.github/workflows/beacon-ci.yml'
+  pull_request:
+    paths:
+      - 'beacon/**'
+      - '.github/workflows/beacon-ci.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  build-test:
+    name: Build, Lint, Test
+    strategy:
+      matrix:
+        rust: [stable, beta, nightly, 1.87.0]
+      fail-fast: false
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beacon
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust (${{ matrix.rust }})
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.rust }}
+          components: clippy, rustfmt
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            beacon -> beacon/target
+          key: ${{ matrix.rust }}
+
+      - name: Verify formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy lint
+        run: cargo clippy --all-targets --all-features -- -D warnings
+
+      - name: Build
+        run: cargo build --locked --all-targets
+
+      - name: Build (release)
+        run: cargo build --locked --release
+
+      - name: Test
+        run: cargo test --locked --all-targets -- --nocapture
+
+  static-builds:
+    name: Static Binary Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: beacon
+    env:
+      CARGO_TERM_COLOR: always
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-unknown-linux-musl
+
+      - name: Install musl-tools
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+
+      - name: Cache cargo
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            beacon -> beacon/target
+
+      - name: Build static release
+        run: |
+          RUSTFLAGS='-C target-feature=+crt-static' \
+          cargo build --locked --release --target x86_64-unknown-linux-musl
+
+      - name: Verify static linking
+        run: |
+          file target/x86_64-unknown-linux-musl/release/beacon
+          ldd target/x86_64-unknown-linux-musl/release/beacon || echo "Static binary confirmed"
+
+      - name: Prepare artifact
+        run: |
+          mkdir -p ../artifacts
+          cp target/x86_64-unknown-linux-musl/release/beacon ../artifacts/beacon-linux-x86_64
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: beacon-linux-x86_64
+          path: artifacts/beacon-linux-x86_64
+          retention-days: 30
