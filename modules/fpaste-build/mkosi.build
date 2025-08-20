@@ -1,0 +1,14 @@
+#!/bin/bash
+set -eux
+FPASTE_URL="https://github.com/sanjayankur31/fpaste.git"
+
+# Create destination dir inside the image root
+mkdir -p "${DESTDIR}/usr/local/fpaste_build"
+mkdir -p "${DESTDIR}/usr/local/bin"
+
+# Clone the fpaste tool
+git clone ${FPASTE_URL} "${DESTDIR}/usr/local/fpaste_build"
+
+# Copy fpaste tool into /bin directory to make it executable
+chmod +x "${DESTDIR}/usr/local/fpaste_build/fpaste"
+cp "${DESTDIR}/usr/local/fpaste_build/fpaste" "${DESTDIR}/usr/local/bin/"
