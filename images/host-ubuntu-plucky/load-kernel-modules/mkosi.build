@@ -1,0 +1,9 @@
+#!/bin/bash
+set -eux
+
+mkdir -p ${DESTDIR}/etc/modules-load.d/
+
+# Load MSR module
+touch ${DESTDIR}/etc/modules-load.d/msr.conf
+echo "msr" > ${DESTDIR}/etc/modules-load.d/msr.conf
+

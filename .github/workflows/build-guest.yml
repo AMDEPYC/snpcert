@@ -19,6 +19,8 @@ jobs:
             name: guest-ubuntu-oracular
           - path: images/guest-debian-bookworm
             name: guest-debian-bookworm
+          - path: images/guest-ubuntu-plucky
+            name: guest-ubuntu-plucky
 
     steps:
       - uses: actions/checkout@v4
