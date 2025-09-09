@@ -1,0 +1,62 @@
+name: publish-latest-images
+on:
+  workflow_run:
+    workflows: ["build-host", "build-guest"]
+    types: [completed]
+
+jobs:
+  release-host:
+    if: ${{ github.event.workflow_run.name == 'build-host' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download host artifacts
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ github.event.workflow_run.id }}
+          path: dist/host
+
+      - name: Create host release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: development-host
+          name: Development Host Images
+          body: Automated build of host images from main branch.
+          files: dist/host/**/*.efi
+          fail_on_unmatched_files: true
+          append_body: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  release-guest:
+    if: ${{ github.event.workflow_run.name == 'build-guest' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Download guest artifacts
+        uses: dawidd6/action-download-artifact@v11
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          run_id: ${{ github.event.workflow_run.id }}
+          path: dist/guest
+
+      - name: Create guest release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: development-guest
+          name: Development Guest Images
+          body: Automated build of guest images from main branch.
+          files: dist/guest/**/*.efi
+          fail_on_unmatched_files: true
+          append_body: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
