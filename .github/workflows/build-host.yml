@@ -17,8 +17,6 @@ jobs:
             name: host-fedora-41
           - path: images/host-ubuntu-oracular
             name: host-ubuntu-oracular
-          - path: images/host-debian-bookworm
-            name: host-debian-bookworm
           - path: images/host-ubuntu-plucky
             name: host-ubuntu-plucky
 
