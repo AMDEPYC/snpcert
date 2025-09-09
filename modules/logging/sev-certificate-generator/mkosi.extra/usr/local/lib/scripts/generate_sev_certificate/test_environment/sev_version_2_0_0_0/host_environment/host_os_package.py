@@ -8,8 +8,10 @@ class HostOSPackage:
     qemu={}
     qemu["fedora"]="qemu"
     qemu["ubuntu"]="qemu-system"
+    qemu["debian"]="qemu-system"
 
     ovmf={}
     ovmf["fedora"]="edk2-ovmf"
     ovmf["ubuntu"]="ovmf"
+    ovmf["debian"]="ovmf"
 

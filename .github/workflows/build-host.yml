@@ -19,6 +19,8 @@ jobs:
             name: host-ubuntu-oracular
           - path: images/host-ubuntu-plucky
             name: host-ubuntu-plucky
+          - path: images/host-debian-trixie
+            name: host-debian-trixie
 
     steps:
       - uses: actions/checkout@v4
