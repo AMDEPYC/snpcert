@@ -21,6 +21,8 @@ jobs:
             name: guest-ubuntu-plucky
           - path: images/guest-debian-trixie
             name: guest-debian-trixie
+          - path: images/guest-centos-10
+            name: guest-centos-10
 
     steps:
       - uses: actions/checkout@v4
