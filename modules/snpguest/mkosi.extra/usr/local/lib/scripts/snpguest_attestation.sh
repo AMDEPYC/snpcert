@@ -3,6 +3,8 @@
 # Environment Variables
 ATTESTATION_DIR="/usr/local/lib/attestation_service"
 ATTESTATION_STATUS_LOG="/usr/local/lib/attestation_status"
+DNS_TIMEOUT=5
+KDS_DOMAIN="kdsintf.amd.com"
 
 # Utility function to check the error status of each step in the attestation workflow
 check_command_status() {
@@ -25,6 +27,24 @@ check_command_status() {
   fi
 }
 
+# Define a function to check DNS resolution with a timeout
+check_dns_resolution() {
+  echo -e "Testing for guest DNS resolution of KDS domain before fetching the certificates..."
+
+  # Attempt to resolve KDS domain repeatedly, with a maximum timeout of 1 minute
+  { dns_resolution=$(timeout ${DNS_TIMEOUT} /bin/bash -c "until host ${KDS_DOMAIN}; do sleep 1; done"); dns_resolution_status=$?; }
+
+    # Check the exit status of the timeout command
+    if [ ${dns_resolution_status} -eq 124 ]; then
+        echo -e "Unable to resolve domain $KDS_DOMAIN"
+        echo -e "DNS check timed out after a minute."
+        echo -e "Please troubleshoot your guest network and DNS settings."
+	      return 1
+    else
+        echo -e "DNS successfully resolved domain $KDS_DOMAIN."
+    fi
+}
+
 snpguest_regular_attestation_workflow() {
   # Create a fresh attestation working directory
   [  -d "${ATTESTATION_DIR}" ] &&  rm -rf "${ATTESTATION_DIR}"
@@ -33,6 +53,9 @@ snpguest_regular_attestation_workflow() {
   # Generate the SNP Attestation Report using a randomly generated request data
   { snp_guest_report=$(snpguest report ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/random-request-data.txt --random 2>&1); report_status=$?; }
   check_command_status "${report_status}" "Generation of SNP Guest Report" "${snp_guest_report}" || return 1
+
+  # Check for the DNS resolution
+  check_dns_resolution || return 1
 
   # Fetch the ARK, ASK certificate chain from Key Distribution Server
   { fetch_ca=$(snpguest fetch ca pem -r "${ATTESTATION_DIR}/attestation-report.bin" "${ATTESTATION_DIR}/certificates" 2>&1); fetch_ca_status=$?; }
