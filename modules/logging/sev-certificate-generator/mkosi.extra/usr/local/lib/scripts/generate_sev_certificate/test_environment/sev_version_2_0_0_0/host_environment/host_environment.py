@@ -33,6 +33,7 @@ class HostEnvironment:
         os_version_command = os_version_command.strip()
         command = subprocess.run(os_version_command, shell=True, check=True, text=True, capture_output=True)
         host_os_id = command.stdout.strip()
+        host_os_id = host_os_id.replace('"','')
         return host_os_id
 
     # Get installed host package versions

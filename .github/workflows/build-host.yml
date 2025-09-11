@@ -21,6 +21,8 @@ jobs:
             name: host-ubuntu-plucky
           - path: images/host-debian-trixie
             name: host-debian-trixie
+          - path: images/host-centos-10
+            name: host-centos-10
 
     steps:
       - uses: actions/checkout@v4

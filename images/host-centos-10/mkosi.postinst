@@ -1,0 +1,10 @@
+#!/bin/bash
+set -eux
+
+# Crete the qemu-system-x86_64 executable from the CentOS's qemu binary.
+mkosi-chroot \
+	cp /usr/libexec/qemu-kvm /usr/bin/qemu-system-x86_64
+
+# Install emoji module using pip
+mkosi-chroot \
+	pip3 install  emoji
