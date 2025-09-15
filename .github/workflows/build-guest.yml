@@ -15,8 +15,6 @@ jobs:
         image:
           - path: images/guest-fedora-41
             name: guest-fedora-41
-          - path: images/guest-ubuntu-oracular
-            name: guest-ubuntu-oracular
           - path: images/guest-ubuntu-plucky
             name: guest-ubuntu-plucky
           - path: images/guest-debian-trixie
