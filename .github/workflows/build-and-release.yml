@@ -63,6 +63,8 @@ jobs:
             release: trixie
           - distro: centos
             release: 10
+          - distro: rocky
+            release: 10
 
     steps:
       - name: Checkout
