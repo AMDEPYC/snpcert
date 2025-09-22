@@ -31,7 +31,7 @@ snpguest_regular_attestation_workflow() {
   mkdir -p "${ATTESTATION_DIR}"
 
   # Generate the SNP Attestation Report using a randomly generated request data
-  { snp_guest_report=$(snpguest report ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/random-request-data.txt --random 2>&1); report_status=$?; }
+  { snp_guest_report=$(snpguest report ${ATTESTATION_DIR}/attestation-report.bin ${ATTESTATION_DIR}/random-request-data.bin --random 2>&1); report_status=$?; }
   check_command_status "${report_status}" "Generation of SNP Guest Report" "${snp_guest_report}" || return 1
 
   # Fetch the ARK, ASK certificate chain from Key Distribution Server
@@ -58,17 +58,20 @@ snpguest_regular_attestation_workflow() {
 }
 
 validate_request_data(){
-  local random_request_data="$(tr -d '\n'< "${ATTESTATION_DIR}/random-request-data.txt")"
+  # local random_request_data="$(tr -d '\n'< "${ATTESTATION_DIR}/random-request-data.txt")"
+  local random_request_data snpguest_report_request_data
+  random_request_data="$(xxd -p -c 0 "${ATTESTATION_DIR}/random-request-data.bin" | tr '[:upper:]' '[:lower:]')"
 
   echo -e "\nRandom Request Data:"
   echo -e "${random_request_data}"
 
   # Get the measurement attribute from the SNP Attestation Report
-  local snpguest_report_request_data=$(snpguest display report ${ATTESTATION_DIR}/attestation-report.bin \
+  snpguest_report_request_data=$(snpguest display report ${ATTESTATION_DIR}/attestation-report.bin \
 											| tr '\n' ' ' | sed "s|.*Report Data:\(.*\)Measurement.*|\1\n|g" \
 											| sed "s| ||g" \
 											| tr '[:upper:]' '[:lower:]'
 										)
+  
   snpguest_report_request_data=$(echo ${snpguest_report_request_data} | sed $'s/[^[:print:]\t]//g')
 
   echo -e "\nRequest Data from SNP Attestation Report:"
