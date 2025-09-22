@@ -5,20 +5,80 @@ use anyhow::Result;
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
+/// Dispatch content types
+///
+/// The purpose of this type is to map dispatch content types to UEFI content
+/// types. This means that GitHub can only select a subset of assets as
+/// dispatch targets. Dispatch will then automatically handle the mapping to
+/// the correct content type for UEFI.
 #[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
-pub struct Asset {
+pub enum Type {
+    /// An EFI module
+    #[serde(rename = "application/vnd.dispatch+efi")]
+    Efi,
+
+    /// An ISO image
+    #[serde(rename = "application/vnd.dispatch+iso")]
+    Iso,
+
+    /// A ramdisk image
+    #[serde(rename = "application/vnd.dispatch+img")]
+    Img,
+}
+
+impl Type {
+    /// The content type required by UEFI
+    pub const fn content_type(&self) -> &str {
+        match self {
+            Self::Efi => "application/efi",
+            Self::Iso => "application/vnd.efi-iso",
+            Self::Img => "application/vnd.efi-img",
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
+#[serde(untagged)]
+enum Knowable<K, U> {
+    Known(K),
+    Unknown(U),
+}
+
+impl<K, U> Knowable<K, U> {
+    fn known(self) -> Option<K> {
+        match self {
+            Self::Known(known) => Some(known),
+            Self::Unknown(..) => None,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Deserialize)]
+pub struct Asset<T = Type> {
     pub name: String,
     pub size: u64,
 
     #[serde(rename = "browser_download_url")]
     pub url: String,
 
-    pub content_type: String,
+    #[serde(rename = "content_type")]
+    pub mime: T,
+}
+
+impl Asset<Knowable<Type, String>> {
+    fn known(self) -> Option<Asset> {
+        self.mime.known().map(|mime| Asset {
+            name: self.name,
+            size: self.size,
+            url: self.url,
+            mime,
+        })
+    }
 }
 
 #[derive(Debug, Deserialize)]
 struct Release {
-    assets: Vec<Asset>,
+    assets: Vec<Asset<Knowable<Type, String>>>,
 }
 
 #[derive(Debug, Serialize, Deserialize)]
@@ -60,7 +120,6 @@ pub struct GitHub {
 
 impl GitHub {
     const USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"));
-    pub const EFI_TYPE: &str = "application/vnd.microsoft.portable-executable";
 
     /// Authenticate with GitHub by guiding user to create a Personal Access Token
     pub fn login(&mut self) -> Result<()> {
@@ -139,7 +198,7 @@ impl GitHub {
         let assets = release
             .assets
             .into_iter()
-            .filter(|asset| asset.content_type == Self::EFI_TYPE)
+            .filter_map(Asset::known)
             .filter(|asset| {
                 self.filter.is_empty() || self.filter.iter().any(|f| asset.name.contains(f))
             })

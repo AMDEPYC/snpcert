@@ -13,15 +13,12 @@ use reqwest::Client;
 use std::convert::Infallible;
 use tokio::sync::Mutex;
 
-use crate::github::{Asset, GitHub, Report};
+use crate::github::{Asset, GitHub, Report, Type};
 use crate::tui::Status;
 
 // This contains the bytes of the poweroff.efi module.
 const POWEROFF_EFI: &[u8] = include_bytes!(env!("POWEROFF_BIN_PATH"));
 const EMPTY: &[u8] = &[];
-
-// The content type for EFI binaries.
-const CT_EFI: &str = "application/efi";
 
 /// Main HTTP service that handles all requests
 pub struct Service {
@@ -67,7 +64,7 @@ impl hyper::service::Service<Request<Incoming>> for Service {
                 return Ok(EMPTY.reply(Code::NOT_FOUND, None, None));
             }
 
-            let response = match *req.method() {
+            let (response, ct) = match *req.method() {
                 // The POST request is used to signal the start of a job.
                 Method::POST => {
                     if status.lock().await.update().booting(remote) {
@@ -110,10 +107,10 @@ impl hyper::service::Service<Request<Incoming>> for Service {
                 Method::HEAD => {
                     match status.clone().assign(remote).await {
                         // No asset assigned, return poweroff EFI binary.
-                        None => return Ok(POWEROFF_EFI.reply(None, CT_EFI, EMPTY)),
+                        None => return Ok(POWEROFF_EFI.reply(None, Type::Efi, EMPTY)),
 
                         // Send the request (possibly redirecting...)
-                        Some(asset) => client.head(asset.url).send().await?,
+                        Some(asset) => (client.head(asset.url).send().await?, asset.mime),
                     }
                 }
 
@@ -121,13 +118,13 @@ impl hyper::service::Service<Request<Incoming>> for Service {
                 Method::GET => {
                     match status.clone().assign(remote).await {
                         // No asset assigned, return poweroff EFI binary.
-                        None => return Ok(POWEROFF_EFI.reply(None, CT_EFI, None)),
+                        None => return Ok(POWEROFF_EFI.reply(None, Type::Efi, None)),
 
                         // Send the request (possibly redirecting...)
                         Some(asset) => {
                             let response = client.get(asset.url).send().await?;
                             status.lock().await.update().downloading(remote);
-                            response
+                            (response, asset.mime)
                         }
                     }
                 }
@@ -141,15 +138,15 @@ impl hyper::service::Service<Request<Incoming>> for Service {
                 }
             };
 
-            let ct_efi = CT_EFI.parse().unwrap();
+            let content_type = ct.content_type().parse().unwrap();
 
             // Construct the response.
             let mut builder = Response::builder().status(response.status());
             for (key, mut value) in response.headers() {
                 // GitHub always returns `application/octet-stream` for EFI
                 // binaries, so we override it here.
-                if key == "content-type" && value == "application/octet-stream" {
-                    value = &ct_efi;
+                if key == "content-type" {
+                    value = &content_type;
                 }
 
                 builder = builder.header(key, value);
@@ -184,7 +181,7 @@ trait Reply {
     fn reply(
         self,
         code: impl Into<Option<Code>>,
-        ct: impl Into<Option<&'static str>>,
+        ct: impl Into<Option<Type>>,
         body: impl Into<Option<&'static [u8]>>,
     ) -> Response<BoxBody<Bytes, Infallible>>;
 }
@@ -193,7 +190,7 @@ impl Reply for &'static [u8] {
     fn reply(
         self,
         code: impl Into<Option<Code>>,
-        ct: impl Into<Option<&'static str>>,
+        ct: impl Into<Option<Type>>,
         body: impl Into<Option<&'static [u8]>>,
     ) -> Response<BoxBody<Bytes, Infallible>> {
         let mut builder = Response::builder()
@@ -201,7 +198,7 @@ impl Reply for &'static [u8] {
             .header("content-length", self.len());
 
         if let Some(ct) = ct.into() {
-            builder = builder.header("content-type", ct);
+            builder = builder.header("content-type", ct.content_type());
         }
 
         builder.body(body.into().unwrap_or(self).embody()).unwrap()

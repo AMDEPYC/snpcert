@@ -2,9 +2,9 @@
 
 **Automated EFI workload orchestration**
 
-`dispatch` automates bare-metal teseting workflows. It does the following:
+`dispatch` automates bare-metal testing workflows. It does the following:
 
-1. downloads the metadata of available workloads from GitHub release assets
+1. downloads metadata of dispatch-enabled workloads from GitHub release assets
 2. manages the queue of workloads and workload execution state
 3. offers workload download over HTTP for HTTP boot clients
 4. files GitHub issues with workload execution results
@@ -32,8 +32,9 @@ sequenceDiagram
     participant B as beacon
 
     Note over D: 🚀 MANUAL: Start dispatch
-    D->>G: list EFI assets
-    G->>D: EFI asset list
+    D->>G: list assets
+    G->>D: asset list
+    D->>D: filter asset list
     D->>D: create execution queue
     D->>D: start http server
     
@@ -75,11 +76,40 @@ sequenceDiagram
 
 ## Core Features
 
-- **GitHub Integration**: Automatically loads EFI binaries from GitHub releases
+- **GitHub Integration**: Automatically loads assets from GitHub releases
 - **HTTP Boot Server**: Standards-compliant HTTP boot for bare metal
 - **Job Queue Management**: Tracks workload assignment and execution state
 - **Automated Reporting**: Creates GitHub issues from workload results
 - **Service Discovery**: mDNS broadcast for network discoverability
+- **Opt-in Deployment**: Only assets with dispatch content types are deployed
+
+## Asset Filtering and Content Types
+
+`dispatch` uses an **opt-in** deployment model through custom content types.
+Only assets explicitly tagged with dispatch-specific content types will be
+deployed, allowing repositories to control which workloads participate in
+automated testing.
+
+### Dispatch Content Types
+
+The following content types are recognized by dispatch:
+
+| Dispatch Content-Type          | Translated to...          | Description              |
+|--------------------------------|---------------------------|--------------------------|
+| `application/vnd.dispatch+efi` | `application/efi`         | EFI modules/applications |
+| `application/vnd.dispatch+iso` | `application/vnd.efi-iso` | ISO disk images          |
+| `application/vnd.dispatch+img` | `application/vnd.efi-img` | Ramdisk images           |
+
+### Example
+
+| Asset Name | Asset Content-Type             | Dispatched as...          |
+|------------|--------------------------------|---------------------------|
+| `foo.iso`  | `application/vnd.dispatch+iso` | `application/vnd.efi-iso` |
+| `qux.iso`  | `application/vnd.efi-iso`      | **ignored**               |
+| `bar.efi`  | `application/vnd.dispatch+efi` | `application/efi`         |
+| `baz.efi`  | `application/octet-stream`     | **ignored**               |
+
+Only files with the `application/vnd.dispatch+*` content types will be included in the dispatch queue.
 
 ## Workflow States
 
@@ -96,12 +126,14 @@ Each workload progresses through these states:
 
 ### Basic Usage
 ```bash
-# Serve all EFI assets from latest release
+# Serve all dispatch-enabled assets from latest release
 dispatch --owner AMDEPYC --repo snpcert --tag latest
 
-# Filter which assets to run
+# Filter which dispatch-enabled assets to run by name
 dispatch --owner AMDEPYC --repo snpcert --tag latest ubuntu-24.04
 ```
+
+**Note**: Only assets with supported dispatch content types will be loaded, regardless of filtering options.
 
 ## Exit Codes
 
