@@ -10,7 +10,7 @@ ExecStart=/usr/local/lib/scripts/guest_measurement.sh
 StandardOutput=journal+console
 StandardError=journal+console
 ExecStartPost=/usr/bin/touch /run/calculate-measurement.ok
-LogExtraFields="SEV_VERSION=2.0.0-0" "SNPHOST_TEST=2.0.0-0"
+LogExtraFields="SEV_VERSION=3.0-0" "SNPHOST_TEST=3.0-0"
 
 [Install]
 WantedBy=multi-user.target

@@ -6,7 +6,7 @@ class GuestEnvironment:
     """ Show guest environment details """
 
     guest_logs_path = "/var/log/journal/guest-logs/"
-    guest_environment_metadata = "GUEST_ENVIRONMENT=2.0.0-0"
+    guest_environment_metadata = "GUEST_ENVIRONMENT=3.0-0"
 
     def show_guest_environment_on_host(self):
 

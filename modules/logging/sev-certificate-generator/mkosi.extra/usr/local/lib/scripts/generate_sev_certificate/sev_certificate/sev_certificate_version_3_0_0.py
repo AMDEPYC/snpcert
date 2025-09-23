@@ -10,8 +10,8 @@ import json
 from pathlib import Path
 current_dir = Path(__file__).resolve().parent
 
-# Import show_test_environment module of sev_version 2.0.0-0
-test_environment_directory = current_dir.parent / 'test_environment'/ 'sev_version_2_0_0_0'
+# Import show_test_environment module of sev_version 3.0-0
+test_environment_directory = current_dir.parent / 'test_environment'/ 'sev_version_3_0_0'
 test_environment_directory = str(test_environment_directory)
 sys.path.append(test_environment_directory)
 from test_environment import TestEnvironment
@@ -29,12 +29,12 @@ test_status_emojis = {
     'skipped': em.emojize(':fast_forward:', language='alias')
 }
 
-# Generates SEV Report of version 2.0.0-0
+# Generates SEV Report of version 3.0-0
 class SEV_Certificate:
-    """ Generates SEV Certificate of version 2.0.0-0 """
+    """ Generates SEV Certificate of version 3.0-0 """
 
     sev_metadata_key = "SEV_VERSION="
-    sev_version = "2.0.0-0"
+    sev_version = "3.0-0"
     guest_logs_path = "/var/log/journal/guest-logs/"
     sev_service = Service()
     test_environment = TestEnvironment()

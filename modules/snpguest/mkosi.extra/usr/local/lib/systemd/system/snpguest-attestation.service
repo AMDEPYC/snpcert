@@ -9,7 +9,7 @@ Type=oneshot
 ExecStart=/usr/local/lib/scripts/snpguest_attestation.sh
 StandardOutput=journal+console
 StandardError=journal+console
-LogExtraFields="SEV_VERSION=2.0.0-0" "SNPGUEST_TEST=2.0.0-0"
+LogExtraFields="SEV_VERSION=3.0-0" "SNPGUEST_TEST=3.0-0"
 
 [Install]
 WantedBy=snpguest-tests.target
