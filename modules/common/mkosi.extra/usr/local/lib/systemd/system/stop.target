@@ -1,0 +1,10 @@
+# Target reached once reporting is complete
+# Final services should use: WantedBy=stop.target
+
+[Unit]
+Description=Stop
+After=report.target
+Wants=report.target
+
+[Install]
+WantedBy=multi-user.target
