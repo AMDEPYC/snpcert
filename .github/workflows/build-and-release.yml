@@ -1,0 +1,112 @@
+name: build-images
+on:
+  pull_request:
+  push:  
+    branches: 
+      - main  
+    tags: 
+      - 'v*'
+
+jobs:
+  # Development release for tag or main pushes
+  create-release:
+    name: create new release for tagged or latest assets
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push'
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Recreate release(replace assets)
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            TAG="devel"
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          gh release delete "${TAG}" --cleanup-tag --yes || true
+          gh release create "${TAG}" \
+            --title "Development Images" \
+            --notes "Automated build of host and guest images from main branch." \
+            --prerelease
+
+  build:
+    name: ${{ matrix.distro }}-${{ matrix.release }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - distro: fedora
+            release: 41
+          - distro: ubuntu
+            release: plucky
+          - distro: debian
+            release: trixie
+          - distro: centos
+            release: 10
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: |
+          sudo sed -i 's/noble/plucky/g' /etc/apt/sources.list.d/ubuntu.sources || true
+          sudo apt update
+          sudo apt install -y mkosi
+
+      - name: Build guest-${{ matrix.distro }}-${{ matrix.release }}
+        run: |
+          sudo mkosi --image-id=guest-${{ matrix.distro }}-${{ matrix.release }} -C images/guest-${{ matrix.distro }}-${{ matrix.release }}/ cat-config
+          sudo mkosi --image-id=guest-${{ matrix.distro }}-${{ matrix.release }} -C images/guest-${{ matrix.distro }}-${{ matrix.release }}/ summary
+          sudo mkosi --image-id=guest-${{ matrix.distro }}-${{ matrix.release }} -C images/guest-${{ matrix.distro }}-${{ matrix.release }}/ build
+      
+      - name: Build host-${{ matrix.distro }}-${{ matrix.release }}
+        run: |
+          sudo mkosi --image-id=host-${{ matrix.distro }}-${{ matrix.release }} -C images/host-${{ matrix.distro }}-${{ matrix.release }}/ cat-config
+          sudo mkosi --image-id=host-${{ matrix.distro }}-${{ matrix.release }} -C images/host-${{ matrix.distro }}-${{ matrix.release }}/ summary
+          sudo mkosi --image-id=host-${{ matrix.distro }}-${{ matrix.release }} -C images/host-${{ matrix.distro }}-${{ matrix.release }}/ build
+      
+      - name: Stage artifacts for release (local copy)
+        run: |        
+          mkdir -p /tmp/release-artifacts
+          cp images/guest-${{ matrix.distro }}-${{ matrix.release }}/guest-${{ matrix.distro }}-${{ matrix.release }}.efi /tmp/release-artifacts/guest-${{ matrix.distro }}-${{ matrix.release }}.efi
+          cp images/host-${{ matrix.distro }}-${{ matrix.release }}/host-${{ matrix.distro }}-${{ matrix.release }}.efi /tmp/release-artifacts/host-${{ matrix.distro }}-${{ matrix.release }}.efi
+      
+      - name: Upload guest assets (default content type)
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            TAG="devel"
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+
+          gh release upload "$TAG" /tmp/release-artifacts/guest-${{ matrix.distro }}-${{ matrix.release }}.efi --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Upload host assets (custom Content-Type)
+        if: github.event_name == 'push'
+        run: |
+          set -euo pipefail
+          if [[ "${GITHUB_REF}" == "refs/heads/main" ]]; then
+            TAG="devel"
+          elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            TAG="${GITHUB_REF#refs/tags/}"
+          fi
+          # Upload host with custom content-type via uploads API
+          RELEASE_ID=$(gh api repos/$GITHUB_REPOSITORY/releases/tags/$TAG --jq .id)
+          HOST_FILE="/tmp/release-artifacts/host-${{ matrix.distro }}-${{ matrix.release }}.efi"
+          curl --fail -sS -X POST \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "Content-Type: application/vnd.dispatch+efi" \
+            --data-binary @"$HOST_FILE" \
+            "https://uploads.github.com/repos/$GITHUB_REPOSITORY/releases/$RELEASE_ID/assets?name=$(basename $HOST_FILE)"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
