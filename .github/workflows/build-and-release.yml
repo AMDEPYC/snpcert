@@ -86,7 +86,7 @@ jobs:
             TAG="${GITHUB_REF#refs/tags/}"
           fi
 
-          gh release upload "$TAG" /tmp/release-artifacts/guest-${{ matrix.distro }}-${{ matrix.release }}.efi --clobber
+          gh release upload "${TAG}" /tmp/release-artifacts/guest-${{ matrix.distro }}-${{ matrix.release }}.efi --clobber
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       
@@ -100,7 +100,7 @@ jobs:
             TAG="${GITHUB_REF#refs/tags/}"
           fi
           # Upload host with custom content-type via uploads API
-          RELEASE_ID=$(gh api repos/$GITHUB_REPOSITORY/releases/tags/$TAG --jq .id)
+          RELEASE_ID=$(gh api repos/$GITHUB_REPOSITORY/releases/tags/"${TAG}" --jq .id)
           HOST_FILE="/tmp/release-artifacts/host-${{ matrix.distro }}-${{ matrix.release }}.efi"
           curl --fail -sS -X POST \
             -H "Authorization: Bearer $GITHUB_TOKEN" \
