@@ -1,17 +1,10 @@
 #!/bin/bash
 set -eux
 
-ls -l "${SRCDIR}"
+# Fetch latest release tag from GitHub API
+LATEST_TAG=$(curl -s https://api.github.com/repos/AMDEPYC/beacon/releases/latest \
+  | grep -oP '"tag_name": "\K(.*)(?=")')
 
-BEACON_DIR="${SRCDIR}/beacon"
-
-curl https://sh.rustup.rs -sSf | sh -s -- -y
-source "$HOME/.cargo/env"
-
-rustup target add x86_64-unknown-linux-musl
-
-cargo build  --release --manifest-path "${BEACON_DIR}/Cargo.toml" --target=x86_64-unknown-linux-musl
-
-install -Dm755 \
-  "${BEACON_DIR}/target/x86_64-unknown-linux-musl/release/beacon" \
-  "${DESTDIR}/usr/local/bin/beacon"
+# Download and install into DESTDIR with correct permissions
+curl -L "https://github.com/AMDEPYC/beacon/releases/download/${LATEST_TAG}/beacon" \
+  | install -D -m 0755 /dev/stdin "${DESTDIR}/usr/local/bin/beacon"
