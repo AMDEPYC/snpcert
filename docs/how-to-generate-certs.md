@@ -1,7 +1,7 @@
 The snpcert repository contains self-service tools to generate AMD SEV certifications for operating systems. The following instructions will utilize the user's AMD EPYC server to run a series of SEV acceptance tests on the operating system and create a Github Issue containing the test results and certificate.
 
 ## Requirements
-- **[Test Server]** An AMD EPYC server enabled with SEV 3.0
+- **[Test Server]** An AMD EPYC server enabled with SEV 3.0 (SNP)
 - **[Dispatch Host]** A separate computing instance with the following restrictions:
   - Must have an IP reachable from the AMD EPYC server (the Test Server) for HTTP boot
   - Must have support for:
@@ -76,6 +76,7 @@ While this screen is up, the images specified are queued for testing. Each image
 - [Using SEV with AMD EPYC processors](https://www.amd.com/content/dam/amd/en/documents/epyc-technical-docs/tuning-guides/58207-using-sev-with-amd-epyc-processors.pdf)
 - [HPE Gen11 Reference](https://support.hpe.com/hpesc/public/docDisplay?docId=sd00003788en_us&page=GUID-0F514002-9AE6-41F1-9005-1B910268FFD0.html)
 - [Dell EMC PowerEdge Reference](https://www.dell.com/support/manuals/en-ai/poweredge-r7525/r7525_bios_ism_pub/processor-settings?guid=guid-ec36d324-4f45-4bc1-bb51-de2db7cc5cd9)
+- [Lenovo ThinkSystem Reference](https://lenovopress.lenovo.com/lp1893-enabling-amd-sev-snp-on-thinksystem-servers)
 
 Some server manuals may not yet be listed.
 
