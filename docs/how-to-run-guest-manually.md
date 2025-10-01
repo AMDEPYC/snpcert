@@ -2,7 +2,9 @@ The typical way to run tests are fully automated. However if you're developing t
 
 # Prerequisites
 
-Ensure that you are running on an AMD EPYC hardware & kernel combination that is fully enabled for SEV 3.0 (SNP). You can verify this by running the following command and resolving any failures:
+Ensure that you are running on an AMD EPYC hardware & kernel combination that is fully enabled for SEV 3.0 (SNP). See the [AMD SEV Tuning Guide](https://www.amd.com/content/dam/amd/en/documents/epyc-technical-docs/tuning-guides/58207-using-sev-with-amd-epyc-processors.pdf) for supported kernel levels and firmware enablement instructions.
+
+You can verify this by running the following command and resolving any failures:
 
 ```
 snphost ok
