@@ -30,7 +30,7 @@ jobs:
           if [[ "${GITHUB_REF}" == "refs/heads/main" || "${GITHUB_EVENT_NAME}" == "workflow_dispatch" ]]; then
             TAG="devel"
             gh release delete "${TAG}" --cleanup-tag --yes || true
-            while git fetch --tags --prune-tags; git tag -l | grep ${TAG}; do
+            while git fetch --tags --prune-tags; git tag -l | grep "^${TAG}$"; do
               sleep 2;
             done
             gh release create "${TAG}" \
@@ -40,7 +40,7 @@ jobs:
           elif [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
             TAG="${GITHUB_REF#refs/tags/}"
             gh release delete "${TAG}" --cleanup-tag --yes || true
-            while git fetch --tags --prune-tags; git tag -l | grep ${TAG}; do
+            while git fetch --tags --prune-tags; git tag -l | grep "^${TAG}$"; do
               sleep 2;
             done
             gh release create "${TAG}" \
