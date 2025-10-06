@@ -41,6 +41,8 @@ Log into github:
 gh auth login
 ```
 
+You must login with permissions to download assets from and create issues in the GitHub repo that dispatch will use. See below.
+
 Download the [latest dispatch binaries](https://github.com/AMDEPYC/dispatch/releases) through your browser or through `gh`:
 ```
 gh release download -R github.com/AMDEPYC/dispatch --pattern 'dispatch-*'
