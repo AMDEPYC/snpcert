@@ -8,9 +8,11 @@ if [ -f /etc/os-release ]; then
     . /etc/os-release
     OS_NAME="${ID}"            
     OS_VERSION="${VERSION_ID}" 
+    OS_LABEL="${OS_NAME}-${OS_VERSION}"
 else
     OS_NAME="$(uname -s)"
     OS_VERSION=""
+    OS_LABEL="${OS_NAME}"
 fi
 
 # Get current date
@@ -24,6 +26,6 @@ else
 fi
 
 # Call beacon
-beacon report --title "$TITLE" --body "$CERT_FILE"
+beacon report --title "$TITLE" --body "$CERT_FILE" --label "certificate" --label "${OS_LABEL}"
 
 echo "Published SEV certificate via beacon with title: $TITLE"
