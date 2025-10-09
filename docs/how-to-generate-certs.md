@@ -49,35 +49,37 @@ Or clone the repository and build it from source.
 
 dispatch uses GitHub APIs to download Release Assets and to create Issues in the repo specified on the dispatch command line (see below). Certain permissions are needed for this to work:
 
-Option 1
-Before running dispatch, run gh auth login and choose to authenticate via the web browser flow.
+##### Option 1
 
-Option 2
-Before running dispatch, run gh auth login and choose to authenticate by pasting an authentication token. 
+Before running dispatch, run 'gh auth login' and choose to authenticate via the web browser flow.
 
-Fine-grained PAT
-If using a fine-grained token (PAT), it must have, at a minimum, the following permissions:
+##### Option 2
 
-Contents: Read-only access
-Issues: Read and write access
+Before running dispatch, run 'gh auth login' and choose to authenticate by pasting an authentication token. 
 
-Classic PAT
-If using a classic token (PAT), it must have, at a minimum, the following permissions:
+  Fine-grained PAT
+  
+    If using a fine-grained token (PAT), it must have, at a minimum, the following permissions:
+    
+      Contents: Read-only access
+      
+      Issues: Read and write access
+  
+  Classic PAT
+  
+    If using a classic token (PAT), it must have, at a minimum, the following permission:
+    
+      repo
 
-repo
-
-Option 3
+##### Option 3
 
 When running dispatch, use the --token option and specify either a fine-grained or a classic PAT as described above.
 
-Option 4
+##### Option 4
 
 Before running dispatch, set an environment variable named GITHUB_TOKEN to either a fine-grained or a classic PAT as described above.
 
-
-
-<img width="1102" height="780" alt="image" src="https://github.com/user-attachments/assets/e8295ee4-2459-4900-8b31-3349b7b8b24a" />
-
+---
 
 If you would like to use the images available in AMD's snpcert repository & post the results in an issue there:
 ```
