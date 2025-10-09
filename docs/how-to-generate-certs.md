@@ -36,11 +36,6 @@ References:
 
 ### 2. Download `AMDEPYC/dispatch`
 
-Log into github:
-```
-gh auth login
-```
-
 Download the [latest dispatch binaries](https://github.com/AMDEPYC/dispatch/releases) through your browser or through `gh`:
 ```
 gh release download -R github.com/AMDEPYC/dispatch --pattern 'dispatch-*'
@@ -49,6 +44,42 @@ chmod a+x dispatch*
 Or clone the repository and build it from source.
 
 ### 3. Run dispatch to start serving images
+
+#### Permissions
+
+dispatch uses GitHub APIs to download Release Assets and to create Issues in the repo specified on the dispatch command line (see below). Certain permissions are needed for this to work:
+
+##### Option 1
+
+Before running dispatch, run 'gh auth login' and choose to authenticate via the web browser flow.
+
+##### Option 2
+
+Before running dispatch, run 'gh auth login' and choose to authenticate by pasting an authentication token. 
+
+  Fine-grained PAT
+  
+    If using a fine-grained token (PAT), it must have, at a minimum, the following permissions:
+    
+      Contents: Read-only access
+      
+      Issues: Read and write access
+  
+  Classic PAT
+  
+    If using a classic token (PAT), it must have, at a minimum, the following permission:
+    
+      repo
+
+##### Option 3
+
+When running dispatch, use the --token option and specify either a fine-grained or a classic PAT as described above.
+
+##### Option 4
+
+Before running dispatch, set an environment variable named GITHUB_TOKEN to either a fine-grained or a classic PAT as described above.
+
+---
 
 If you would like to use the images available in AMD's sev-certify repository & post the results in an issue there:
 ```
