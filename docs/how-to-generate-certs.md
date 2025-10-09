@@ -81,7 +81,7 @@ Before running dispatch, set an environment variable named GITHUB_TOKEN to eithe
 
 ---
 
-If you would like to use the images available in AMD's snpcert repository & post the results in an issue there:
+If you would like to use the images available in AMD's sev-certify repository & post the results in an issue there:
 ```
 ./dispatch-linux-x86_64 --owner AMDEPYC --repo snpcert --tag devel
 ```
