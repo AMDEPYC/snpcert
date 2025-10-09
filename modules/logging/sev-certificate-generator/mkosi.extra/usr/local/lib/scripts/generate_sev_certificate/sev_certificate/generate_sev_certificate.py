@@ -19,5 +19,5 @@ sev_report += sev_report_v_3_0_0.generate_sev_certificate()
 print(sev_report)
 
 # Write certificate to file
-sev_report_v_3_0_0.write_sev_certificate(sev_report, "~/sev_certificate.txt")
+sev_report_v_3_0_0.write_sev_certificate(sev_report, "~/sev_certificate_v3.0-0.txt")
 

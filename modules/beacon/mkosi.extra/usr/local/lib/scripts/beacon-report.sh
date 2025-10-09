@@ -1,7 +1,8 @@
 #!/usr/bin/bash
 set -euo pipefail
 
-CERT_FILE="${HOME:-/root}/sev_certificate.txt"
+SEV_VERSIONS=("3.0-0")
+SEV_CERT_FILE=""
 
 # Determine OS name and version
 if [ -f /etc/os-release ]; then
@@ -15,17 +16,20 @@ else
     OS_LABEL="${OS_NAME}"
 fi
 
-# Get current date
-TODAY=$(date +%Y-%m-%d)
+# Loop over to generate beacon report for all SEV certificates
+for sev_version in "${SEV_VERSIONS[@]}"; do
+  # Build title
+  if [ -n "$OS_VERSION" ]; then
+    SEV_TITLE="${OS_NAME} ${OS_VERSION} SEV version ${sev_version}"
+  else
+    SEV_TITLE="${OS_NAME} SEV version ${sev_version}"
+  fi
 
-# Build title
-if [ -n "$OS_VERSION" ]; then
-    TITLE="${OS_NAME} ${OS_VERSION} ${TODAY} SEV Certificate"
-else
-    TITLE="${OS_NAME} ${TODAY} SEV Certificate"
-fi
+  # Obtain SEV Version Content
+  SEV_CERT_FILE="${HOME:-/root}/sev_certificate_v${sev_version}.txt"
 
-# Call beacon
-beacon report --title "$TITLE" --body "$CERT_FILE" --label "certificate" --label "${OS_LABEL}"
+  # Call beacon
+  beacon report --title "$SEV_TITLE" --body "$SEV_CERT_FILE" --label "certificate" --label "${OS_LABEL}"
 
-echo "Published SEV certificate via beacon with title: $TITLE"
+  echo "Published SEV certificate via beacon with title: $SEV_TITLE"
+done
