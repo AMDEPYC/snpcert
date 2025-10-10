@@ -1,89 +1,66 @@
-# Welcome to SEV-SNP OS Certification
-
-This contains images constructed using `mkosi`. The specific images all
-inherit from the `common` image data. This means that we can put things
-like `snpguest` tests and other workloads in `common` to be shared by
-all of the OS images.
-
-Individual guest tests should be written as systemd services.
-
-# How to Run
-
-1. Download the build artifacts for your relevant guest distro.
-
-2. Unzip the artifacts.
-
-3. Run them:
-
-```sh
-$ qemu-kvm -m 2G \
-    -bios /usr/share/edk2/ovmf/OVMF_CODE.fd \
-    -kernel guest/fedora/41/image.efi \
-    -hda guest/fedora/41/image.qcow2
-```
-
-4. <ins>**Launch SNP Guest:** </ins>   Run an SNP guest with the direct boot options and kernel-hashes=on for the confidential guest measured boot:
-
-```sh
-$ qemu-system-x86_64 \
-    -enable-kvm \
-    -cpu EPYC-v4 \
-    -smp 1 \
-    -device virtio-blk-pci,drive=disk0,id=scsi0 \
-    -drive file=guest/fedora/41/image.qcow2,if=none,id=disk0 \
-    -machine memory-encryption=sev0,vmport=off \
-    -object memory-backend-memfd,id=ram1,size=2048M \
-    -machine memory-backend=ram1 \
-    -object sev-snp-guest,id=sev0,cbitpos=51,reduced-phys-bits=1,kernel-hashes=on \
-    -bios /usr/share/edk2/ovmf/OVMF.amdsev.fd \
-    -kernel guest/fedora/41/image.efi \
-    -nographic
-```
-
-5. <ins>**Share host files with the SNP guest:** </ins>
-   a)  Create a host directory to expose certain host files to the SNP guest:
-
-   ```
-    $ mkdir shared_directory
-   ```
-
-   b) Add some required host files to be shared with the guest inside the `shared_directory`:
-
-   ```
-    $ cp /usr/share/edk2/ovmf/OVMF.amdsev.fd shared_directory
-    $ cp guest/fedora/41/image.efi shared_directory
-   ```
+# Welcome to SEV OS Certification
 
 
-    c) Re-start the same SNP guest with the additional VirtFS qemu option to enable the access of the host files by SNP Guest using the 9P network protocol :
+The purpose of this repository is to provide a unified framework for testing and certifying operating system support for [AMD Secure Encrypted Virtualization (SEV)](https://www.amd.com/en/developer/sev.html) features. Self-service tools are provided to run a series of certification tests using an AMD EPYC server, allowing for any user/organization to verify SEV support on a particular OS. 
 
-    ```sh
-    $ qemu-system-x86_64 \
-        -enable-kvm \
-        -cpu EPYC-v4 \
-        -smp 1 \
-        -device virtio-blk-pci,drive=disk0,id=scsi0 \
-        -drive file=guest/fedora/41/image.qcow2,if=none,id=disk0 \
-        -machine memory-encryption=sev0,vmport=off \
-        -object memory-backend-memfd,id=ram1,size=2048M \
-        -machine memory-backend=ram1 \
-        -object sev-snp-guest,id=sev0,cbitpos=51,reduced-phys-bits=1,kernel-hashes=on \
-        -bios /usr/share/edk2/ovmf/OVMF.amdsev.fd \
-        -kernel guest/fedora/41/image.efi \
-        -nographic \
-        -virtfs local,path=shared_directory,mount_tag,mount_tag=shared,security_model=mapped,id=fs0
-    ```
+**Note**: Currently only linux distributions supported by [`mkosi`](https://github.com/systemd/mkosi) are compatible with this framework.
 
-    d)**Mounting the shared host path:**
+## Certification Matrix
 
-    i) Create a mount point path inside the SNP Guest
+This table contains operating systems that have undergone certification testing for AMD features through this repository. 
 
-    ```
-        $ mkdir /etc/shared_host_directory
-    ```
+| OS |  Status |  Certification Level |
+|---|---|---|
+| Ubuntu Plucky |  ✅ |  [v3.0-0](https://github.com/AMDEPYC/sev-certify/issues/154) |
+| Debian Trixie |  ❌ |  [N/A](https://github.com/AMDEPYC/sev-certify/issues/152) |
+| Fedora 41 |  ✅ |  [v3.0-0](https://github.com/AMDEPYC/sev-certify/issues/153) |
+| CentOS 10 |  ✅ |  [v3.0-0](https://github.com/AMDEPYC/sev-certify/issues/151) |
+| Rocky 10 |  ❌ |  N/A |
 
-    ii) Mount the shared host folder with the `shared` mount tag using virtio 9P transport method :
+✅ Passing tests for latest certification level
+❌ Not Certified for latest level
 
-    ```
-        $  mount -t 9p -o trans=virtio shared /etc/shared_host_directory
-    ```
+## Self-Service Certification Tools
+
+
+Users/Organizations may target their own SEV-enabled EPYC server for self-service certification runs. Follow our guide on running an automated certification test [here](https://github.com/AMDEPYC/sev-certify/blob/update-readme/docs/how-to-generate-certs.md).
+
+## Certification Result Information
+
+Each certification run automatically creates a GitHub Issue in this repository, documenting the results and assigning a certification level. Issues are tagged by OS and SEV feature to facilitate searching and tracking.
+
+_Issue tags and details to be added here._
+
+## Images
+
+
+Host and Guest images are constructed in GitHub Workflows via [`mkosi`](https://github.com/systemd/mkosi). Host images are designed to be booted on a SEV-enabled EPYC server, and are configured with a series of custom systemd services that will run tests on an embedded guest image. The resulting host and guest images are available in GitHub releases in this repository.
+
+
+## Project Organization
+
+The repository is organized as follows:
+
+- `docs/`: Documentation, guides, and images for using and understanding the project.
+- `images/`: Host and guest OS image build configurations for various distributions.
+- `modules/`: Modular components, scripts, and systemd service definitions for building and running certification workflows. Key submodules include:
+	- `build/`: General build configuration for the modular system.
+	- `common/`: Shared configuration files for use by multiple modules.
+	- `embed-guest-image/`: Scripts and configs for embedding guest images into host images.
+	- `guest/`: Guest OS configuration for certification.
+	- `guest-measurement/`: Tools and scripts for generating the expected measurement for the test guest.
+	- `guest-notices/`: Systemd configuration and notification handling for guests.
+	- `host/`: Host OS configuration for certification.
+	- `launch-snp-guest/`: Scripts for launching SEV-SNP guests.
+	- `load-kernel-modules/`: Build scripts for loading required kernel modules.
+	- `logging/`: Logging utilities, including:
+		- `capture-guest-logs-in-host/`: Capture guest logs from the host.
+		- `display-guest-environment/`: Display guest environment details.
+		- `display-guest-logs/`: Display guest logs.
+		- `sev-certificate-generator/`: Tools for generating SEV certificates.
+		- `upload-guest-logs/`: Utilities for uploading guest logs.
+	- `reboot/`: Scripts for reboot operations during workflows.
+	- `snpguest/`: Embedded guest tests and attestation tools.
+	- `snpguest-build/`: Build scripts for SEV-SNP guest images.
+	- `snphost/`: Build scripts and configuration for SEV-SNP host images.
+
