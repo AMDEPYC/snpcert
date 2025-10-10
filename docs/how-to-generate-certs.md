@@ -1,4 +1,4 @@
-The sev-certify repository contains self-service tools to generate AMD SEV certifications for operating systems. The following instructions will utilize the user's AMD EPYC server to run a series of SEV acceptance tests on the operating system and create a Github Issue containing the test results and certificate.
+The snpcert repository contains self-service tools to generate AMD SEV certifications for operating systems. The following instructions will utilize the user's AMD EPYC server to run a series of SEV acceptance tests on the operating system and create a Github Issue containing the test results and certificate.
 
 ## Requirements
 - **[Test Server]** An AMD EPYC server enabled with SEV 3.0 (SNP)
@@ -10,7 +10,7 @@ The sev-certify repository contains self-service tools to generate AMD SEV certi
 
 ## Dispatch Host Setup
 
-On your Dispatch Host, download and run the [dispatch](https://github.com/AMDEPYC/dispatch) tool. This tool serves images from the `sev-certify` repo. These images are configured to boot on the Test Server bare-metal and automatically run a series of tests before transmitting results back to the Dispatch server. Then `dispatch` opens a GH issue in the specified repo with the certification results. See the [dispatch](https://github.com/AMDEPYC/dispatch) README for detailed information about how it works.
+On your Dispatch Host, download and run the [dispatch](https://github.com/AMDEPYC/dispatch) tool. This tool serves images from the `snpcert` repo. These images are configured to boot on the Test Server bare-metal and automatically run a series of tests before transmitting results back to the Dispatch server. Then `dispatch` opens a GH issue in the specified repo with the certification results. See the [dispatch](https://github.com/AMDEPYC/dispatch) README for detailed information about how it works.
 
 ### 1. Install dependencies  
 
@@ -36,11 +36,6 @@ References:
 
 ### 2. Download `AMDEPYC/dispatch`
 
-Log into github:
-```
-gh auth login
-```
-
 Download the [latest dispatch binaries](https://github.com/AMDEPYC/dispatch/releases) through your browser or through `gh`:
 ```
 gh release download -R github.com/AMDEPYC/dispatch --pattern 'dispatch-*'
@@ -50,19 +45,55 @@ Or clone the repository and build it from source.
 
 ### 3. Run dispatch to start serving images
 
-If you would like to use the images available in AMD's sev-certify repository & post the results in an issue there:
+#### Permissions
+
+dispatch uses GitHub APIs to download Release Assets and to create Issues in the repo specified on the dispatch command line (see below). Certain permissions are needed for this to work:
+
+##### Option 1
+
+Before running dispatch, run 'gh auth login' and choose to authenticate via the web browser flow.
+
+##### Option 2
+
+Before running dispatch, run 'gh auth login' and choose to authenticate by pasting an authentication token. 
+
+  Fine-grained PAT
+  
+    If using a fine-grained token (PAT), it must have, at a minimum, the following permissions:
+    
+      Contents: Read-only access
+      
+      Issues: Read and write access
+  
+  Classic PAT
+  
+    If using a classic token (PAT), it must have, at a minimum, the following permission:
+    
+      repo
+
+##### Option 3
+
+When running dispatch, use the --token option and specify either a fine-grained or a classic PAT as described above.
+
+##### Option 4
+
+Before running dispatch, set an environment variable named GITHUB_TOKEN to either a fine-grained or a classic PAT as described above.
+
+---
+
+If you would like to use the images available in AMD's snpcert repository & post the results in an issue there:
 ```
-./dispatch-linux-x86_64 --owner AMDEPYC --repo sev-certify --tag devel
+./dispatch-linux-x86_64 --owner AMDEPYC --repo snpcert --tag devel
 ```
 
 You can optionally add a filter at the end if you want to run on a subset of images:
 ```
-./dispatch-linux-x86_64 --owner AMDEPYC --repo sev-certify --tag devel ubuntu
+./dispatch-linux-x86_64 --owner AMDEPYC --repo snpcert --tag devel ubuntu
 ```
 
-You can also fork the `AMDEPYC/sev-certify` repository to build the images and have certification results posted in that repository's issues - see [Forking sev-certify](#forking-amdepycsev-certify-for-certification-testing) for more information.
+You can also fork the `AMDEPYC/snpcert` repository to build the images and have certification results posted in that repository's issues - see [Forking snpcert](#forking-amdepycsnpcert-for-certification-testing) for more information.
 ```
-./dispatch-linux-x86_64 --owner <your org/username> --repo sev-certify --tag devel
+./dispatch-linux-x86_64 --owner <your org/username> --repo snpcert --tag devel
 ```
 
 If you run the first command with no filter specified, you should see the following screen:  
@@ -108,11 +139,11 @@ Start the machine with this boot option selected. If you have several images que
 ### 3. Boot the machine using HTTP boot
 If configured correctly, in the Test Server's console you'll see it downloading the host image. You can switch back to your dispatch server and watch for the status of the test via the icons to the left of the images. See [Workflow-Stats](https://github.com/AMDEPYC/dispatch?tab=readme-ov-file#workflow-states) for a table of the icon meanings. When it reaches 🏁 , you should see a new Github Issue in the repository that you specified when invoking `dispatch`.
 
-## Forking `AMDEPYC/sev-certify` for certification testing
-If you wish to build alternate images and/or send test results to an alternate repository, fork `AMDEPYC/sev-certify` into your organization or personal account.
+## Forking `AMDEPYC/snpcert` for certification testing
+If you wish to build alternate images and/or send test results to an alternate repository, fork `AMDEPYC/snpcert` into your organization or personal account.
 
 ### 1. Fork the repository
-Fork this repository into your account or organization: [AMDEPYC/sev-certify](https://github.com/AMDEPYC/sev-certify)
+Fork this repository into your account or organization: [AMDEPYC/snpcert](https://github.com/AMDEPYC/snpcert)
 See [Forking a Repository](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/working-with-forks/fork-a-repo#forking-a-repository)
 
 ### 2. Build Images
@@ -129,6 +160,6 @@ If they are not already enabled, check the box to enable issues, so that `dispat
 ### 4. Run dispatch
 You can now run dispatch while specifying the new repository:
 ```
-./dispatch-linux-x86_64 --owner <your-org or username> --repo sev-certify --tag devel
+./dispatch-linux-x86_64 --owner <your-org or username> --repo snpcert --tag devel
 ```
 
