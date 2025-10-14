@@ -14,11 +14,19 @@ If you are using a host image built by this repository, snphost is already insta
 
 # How to Run
 
-1. Download the build artifacts for your relevant guest distro.
+1. Download or build artifacts for your relevant guest distro.
 
-2. Unzip the artifacts.
+Guest images are available for download in sev-certify release assets: https://github.com/AMDEPYC/sev-certify/releases. Unzip them if necessary.
 
-3. <ins>**Launch SNP Guest:** </ins>   Run an SNP guest with the direct boot options and kernel-hashes=on for the confidential guest measured boot:
+Alternatively, images can be built by cloning this repository and running `mkosi` on the appropriate directory. Target any of the [`image/` directories](https://github.com/AMDEPYC/sev-certify/tree/main/images) to build those distro-specific artifacts:
+
+```
+sudo mkosi --image-id=guest-fedora-41 -C images/guest-fedora-41 build
+```
+
+Resulting image, kernel, boot ramfs will be deposited in the targeted directory.
+
+2. <ins>**Launch SNP Guest:** </ins>   Run an SNP guest with the direct boot options and kernel-hashes=on for the confidential guest measured boot:
 
 ```sh
 $ qemu-system-x86_64 \
@@ -35,5 +43,10 @@ $ qemu-system-x86_64 \
   -kernel ${EFI_PATH}
 ```
 
-Where `$OVMF_PATH` is either `/usr/share/ovmf/OVMF.amdsev.fd` or `/usr/share/edk2/ovmf/OVMF.amdsev.fd`, depending on your distro.
+- `EFI_PATH`: 
+  - If you're running inside a host image from this repository, the guest image is embedded at: `/usr/local/lib/guest-image/guest.efi`.
+  - Otherwise, set this to the path of the guest image downloaded/built in step 1.
+
+- `$OVMF_PATH`: either `/usr/share/ovmf/OVMF.amdsev.fd` or `/usr/share/edk2/ovmf/OVMF.amdsev.fd`, depending on your distro.
+
 
