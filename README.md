@@ -27,13 +27,13 @@ Users/Organizations may target their own SEV-enabled EPYC server for self-servic
 
 ## Certification Result Information
 
-Each certification run automatically creates a GitHub Issue in this repository, documenting the results and assigning a certification level. Issues are tagged by OS and SEV feature to facilitate searching and tracking.
+Each certification run automatically creates a GitHub Issue containing the results and assigning a certification level. Issues are tagged by OS and SEV feature to facilitate searching and tracking.
 
 _Issue tags and details to be added here._
 
 ## Images
 
 
-Host and Guest images are constructed in GitHub Workflows via [`mkosi`](https://github.com/systemd/mkosi). Host images are designed to be booted on a SEV-enabled EPYC server, and are configured with a series of custom systemd services that will run tests on an embedded guest image. The resulting host and guest images are available in GitHub releases in this repository.
+Host and Guest images are constructed in GitHub Workflows via [`mkosi`](https://github.com/systemd/mkosi). Host images are designed to be booted on a SEV-enabled EPYC server, and are configured with a series of tests in the form of custom systemd services that will run on an embedded guest image. The resulting host and guest images are available in GitHub releases.
 
 

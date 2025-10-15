@@ -1,4 +1,4 @@
-The typical way to run tests are fully automated. However if you're developing tests or isolating an issue, you may find it useful to run guests manually. The following instructions assume you are running on AMD EPYC hardware that has been fully enabled for SEV.
+The typical way to run tests is fully automated, including running guests automatically. However if you're developing tests or isolating an issue, you may find it useful to run guests manually. The following instructions assume you are running on AMD EPYC hardware that has been fully enabled for SEV.
 
 # Prerequisites
 
@@ -43,7 +43,7 @@ $ qemu-system-x86_64 \
   -kernel ${EFI_PATH}
 ```
 
-- `EFI_PATH`: 
+- `$EFI_PATH`: 
   - If you're running inside a host image from this repository, the guest image is embedded at: `/usr/local/lib/guest-image/guest.efi`.
   - Otherwise, set this to the path of the guest image downloaded/built in step 1.
 

@@ -10,7 +10,8 @@ on:
   push:  
     paths-ignore:
       - 'docs/**'
-      - 'README.md'
+      - '**.md'
+      - 'LICENSE'
     branches: 
       - main  
     tags: 
